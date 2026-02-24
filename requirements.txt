@@ -1,0 +1,9 @@
+# Dependencias del proyecto: Asistente de Planes Familiares con Hugging Face
+# Instalar con: pip install -r requirements.txt
+
+# Cliente oficial de Hugging Face Hub (incluye InferenceClient)
+huggingface_hub>=0.22.0
+
+# Carga variables de entorno desde un archivo .env (opcional pero recomendado)
+python-dotenv>=1.0.0
+

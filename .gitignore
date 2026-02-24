@@ -1,0 +1,19 @@
+# Archivos y carpetas ignorados por Git
+
+# Token y variables de entorno — ¡NUNCA subir a repositorios!
+.env
+
+# Entorno virtual de Python
+.venv/
+venv/
+env/
+
+# Caché de Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Archivos de configuración de IDEs
+.idea/
+*.iml
+
