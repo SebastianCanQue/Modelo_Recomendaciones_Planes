@@ -59,77 +59,74 @@ def buscar_planes(ciudad: str):
         return
 
     # Buscar planes nuevos
-    with st.status(f"🔍 Buscando planes para **{ciudad}**...", expanded=True) as status:
-        try:
-            def actualizar_estado(msg: str):
-                status.update(label=f"🔍 {msg}")
+    try:
+        with st.spinner(f"Buscando planes para **{ciudad}**..."):
+            planes = obtener_planes(ciudad)
 
-            planes = obtener_planes(ciudad, callback_estado=actualizar_estado)
+        # Guardar en historial
+        st.session_state.historial.append({
+            "ciudad": ciudad,
+            "planes": planes,
+        })
+        st.session_state.resultado_actual = planes
+        st.session_state.ciudad_actual = ciudad
+        st.toast("¡Planes encontrados!", icon="✅")
 
-            # Guardar en historial
-            st.session_state.historial.append({
-                "ciudad": ciudad,
-                "planes": planes,
-            })
-            st.session_state.resultado_actual = planes
-            st.session_state.ciudad_actual = ciudad
+    except EnvironmentError:
+        render_error(
+            "**Token no configurado.** Añade tu `HF_TOKEN` en el archivo "
+            "`.env` o en los secrets de Streamlit.",
+            tipo="error",
+        )
 
-            status.update(label="✅ ¡Planes encontrados!", state="complete")
+    except ConnectionError:
+        render_error(
+            "No se pudo conectar con la API de Hugging Face. "
+            "Comprueba tu conexión a internet y que tu token sea válido.",
+            tipo="error",
+        )
 
-        except EnvironmentError as e:
-            status.update(label="❌ Error de configuración", state="error")
-            render_error(
-                "**Token no configurado.** Añade tu `HF_TOKEN` en el archivo "
-                "`.env` o en los secrets de Streamlit.",
-                tipo="error",
-            )
+    except ValueError:
+        render_error(
+            "El modelo devolvió una respuesta vacía. Inténtalo de nuevo.",
+            tipo="warning",
+        )
 
-        except ConnectionError as e:
-            status.update(label="❌ Error de conexión", state="error")
-            render_error(
-                "No se pudo conectar con la API de Hugging Face. "
-                "Comprueba tu conexión a internet y que tu token sea válido.",
-                tipo="error",
-            )
-
-        except ValueError as e:
-            status.update(label="⚠️ Respuesta vacía", state="error")
-            render_error(
-                "El modelo devolvió una respuesta vacía. Inténtalo de nuevo.",
-                tipo="warning",
-            )
-
-        except Exception as e:
-            status.update(label="❌ Error inesperado", state="error")
-            render_error(f"Error inesperado: {type(e).__name__}: {e}")
+    except Exception as e:
+        render_error(f"Error inesperado: {type(e).__name__}: {e}")
 
 
 # ── Layout principal ─────────────────────────────────────────────────────────
 def main():
-    # Header
     render_header()
 
     # Sidebar (puede devolver una ciudad del historial)
     ciudad_del_historial = render_sidebar()
 
-    # Formulario de búsqueda
-    col1, col2 = st.columns([4, 1])
+    # Barra de búsqueda
+    col_input, col_btn = st.columns([5, 1])
 
-    with col1:
+    with col_input:
         ciudad_input = st.text_input(
             "Ciudad",
-            placeholder="Ej: Granada, Madrid, Barcelona...",
+            placeholder="Escribe una ciudad... Ej: Granada, Madrid, Barcelona",
             label_visibility="collapsed",
         )
 
-    with col2:
-        boton_buscar = st.button("🔍 Buscar", type="primary", use_container_width=True)
+    with col_btn:
+        boton_buscar = st.button(
+            "Buscar",
+            type="primary",
+            use_container_width=True,
+        )
 
     # Manejar acciones
     if boton_buscar and ciudad_input:
         buscar_planes(ciudad_input)
     elif ciudad_del_historial:
         buscar_planes(ciudad_del_historial)
+
+    st.markdown("")  # spacer
 
     # Mostrar resultado o estado vacío
     if st.session_state.resultado_actual and st.session_state.ciudad_actual:
