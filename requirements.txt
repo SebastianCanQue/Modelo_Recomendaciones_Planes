@@ -7,3 +7,6 @@ huggingface_hub>=0.22.0
 # Carga variables de entorno desde un archivo .env (opcional pero recomendado)
 python-dotenv>=1.0.0
 
+# Framework web para la interfaz gráfica
+streamlit>=1.32.0
+
